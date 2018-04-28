@@ -1,7 +1,7 @@
-const imageUrl = require('../functions/imageUrl/__main__')
 import * as url from 'url'
+import { defaultOptionsSpecs } from '../core'
+import { VideoboxEncoder } from '../encoder'
 import { OptionsGetter } from '../helpers/optionsGetter'
-import { defaultOptionsSpecs } from '../core';
 
 export interface AdapterOptions {
     thumbnailWidth?: number
@@ -13,15 +13,16 @@ export interface AdapterOptions {
 
 export abstract class Adapter<T extends AdapterOptions> {
 
-    static load(_type: string, _id: string): Adapter<any> | false {
+    static load(_encoder: VideoboxEncoder, _type: string, _id: string): Adapter<any> | false {
         throw new Error('Not implemented')
     }
 
-    static parse<T extends AdapterOptions>(_options: T, _videoUrl: url.URL, _title: string, _start: number, _end: number): Adapter<any> | false {
+    static parse<T extends AdapterOptions>(_encoder: VideoboxEncoder, _options: T, _videoUrl: url.UrlWithParsedQuery, _title: string, _start: number, _end: number): Adapter<any> | false {
         throw new Error('Not implemented')
     }
 
     constructor(
+        protected encoder: VideoboxEncoder,
         protected options: T,
         protected id: string,
         protected title = '',
@@ -39,20 +40,13 @@ export abstract class Adapter<T extends AdapterOptions> {
     abstract async getPlayerUrl(): Promise<string>
 
     async getThumbnailUrl(): Promise<string> {
-        return new Promise<string>((resolve, reject) => {
-            imageUrl(
-                this.adapterType,
-                this.id,
-                this.options.thumbnailWidth,
-                this.options.thumbnailHeight,
-                this.options.removeBorder,
-                {}, (err, val, _head) => {
-                    if (err)
-                        return reject(err)
-
-                    resolve(val)
-                })
-        })
+        return this.encoder.encodeThumbnail(
+            this.adapterType,
+            this.id,
+            this.options.thumbnailWidth,
+            this.options.thumbnailHeight,
+            this.options.removeBorder
+        )
     }
 
     serialize() {

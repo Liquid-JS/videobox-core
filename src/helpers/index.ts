@@ -2,6 +2,9 @@ import * as path from 'path'
 import * as request from 'request'
 import * as url from 'url'
 
+export * from './generator'
+export * from './optionsGetter'
+
 export function checkExtensions(baseUrl: string | url.URL, extensions: string[], mime: true): Promise<{ url: string, mime: string }[]>
 export function checkExtensions(baseUrl: string | url.URL, extensions: string[]): Promise<string[]>
 export function checkExtensions(baseUrl: string | url.URL, extensions: string[], mime = false) {

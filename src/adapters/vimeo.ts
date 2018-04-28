@@ -1,4 +1,6 @@
 import * as request from 'request'
+import * as url from 'url'
+import { VideoboxEncoder } from '../encoder'
 import { splitTime } from '../helpers'
 import { Adapter, AdapterOptions } from './base'
 
@@ -6,21 +8,21 @@ const adapterType = 'vimeo'
 
 export class Vimeo extends Adapter<AdapterOptions> {
 
-    static load(type: string, id: string) {
+    static load(encoder: VideoboxEncoder, type: string, id: string) {
         if (type == adapterType)
-            return new Vimeo({}, id)
+            return new Vimeo(encoder, {}, id)
 
         return false
     }
 
-    static parse(options, videoUrl, title = '', start = 0, end = 0) {
+    static parse(encoder: VideoboxEncoder, options: AdapterOptions, videoUrl: url.UrlWithParsedQuery, title = '', start = 0, end = 0) {
         // URL is only numeric
         // e.g. 230564722
         if (
             videoUrl.href
             && videoUrl.href.match(/^\d+$/)
         )
-            return new Vimeo(options, videoUrl.href, title, start, end, adapterType)
+            return new Vimeo(encoder, options, videoUrl.href, title, start, end, adapterType)
 
         // URL is a full vimeo video URL
         // e.g. https://vimeo.com/230564722
@@ -30,7 +32,7 @@ export class Vimeo extends Adapter<AdapterOptions> {
             && videoUrl.pathname
             && videoUrl.pathname.substr(1).match(/^\d+$/)
         )
-            return new Vimeo(options, videoUrl.pathname.substr(1), title, start, end, adapterType)
+            return new Vimeo(encoder, options, videoUrl.pathname.substr(1), title, start, end, adapterType)
 
         return false
     }

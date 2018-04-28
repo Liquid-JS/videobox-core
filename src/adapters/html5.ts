@@ -2,11 +2,10 @@ import * as Ffmpeg from 'fluent-ffmpeg'
 import * as JSFtp from 'jsftp'
 import * as path from 'path'
 import * as url from 'url'
+import { VideoboxEncoder } from '../encoder'
 import { checkExtensions } from '../helpers'
 import { OptionsGetter } from '../helpers/optionsGetter'
 import { Adapter, AdapterOptions } from './base'
-
-const embedUrl = require('../../functions/embedUrl/__main__')
 
 const adapterType = 'html5'
 
@@ -34,14 +33,14 @@ export class HTML5 extends Adapter<HTML5Options> {
     plainUrl: url.URL
     extension: string
 
-    static load(type: string, id: string) {
+    static load(encoder: VideoboxEncoder, type: string, id: string) {
         if (type == adapterType)
-            return new HTML5({}, id)
+            return new HTML5(encoder, {}, id)
 
         return false
     }
 
-    static parse(options: HTML5Options = {}, videoUrl: url.URL, title = '', start = 0, end = 0) {
+    static parse(encoder: VideoboxEncoder, options: HTML5Options = {}, videoUrl: url.UrlWithParsedQuery, title = '', start = 0, end = 0) {
         const extension = path.extname(videoUrl.pathname).substr(1).toLowerCase()
 
         // URL ends with `VIDEO_EXTENSIONS`
@@ -51,7 +50,7 @@ export class HTML5 extends Adapter<HTML5Options> {
             && videoUrl.pathname
             && VIDEO_EXTENSIONS.indexOf(extension) >= 0
         )
-            return new HTML5(options, videoUrl.href, title, start, end, adapterType)
+            return new HTML5(encoder, options, videoUrl.href, title, start, end, adapterType)
 
         // URL ends with `AUDIO_EXTENSIONS`
         // e.g. http://vjs.zencdn.net/v/oceans.mp3
@@ -60,12 +59,12 @@ export class HTML5 extends Adapter<HTML5Options> {
             && videoUrl.pathname
             && AUDIO_EXTENSIONS.indexOf(extension) >= 0
         )
-            return new HTML5(options, videoUrl.href, title, start, end, adapterType)
+            return new HTML5(encoder, options, videoUrl.href, title, start, end, adapterType)
 
         return false
     }
 
-    constructor(options: HTML5Options, id: string, title = '', start = 0, end = 0, type = 'none') {
+    constructor(encoder: VideoboxEncoder, options: HTML5Options, id: string, title = '', start = 0, end = 0, type = 'none') {
         options = options || {}
         options.html5 = options.html5 || {}
         OptionsGetter.parseOptions(optionsSpecs, options.html5)
@@ -78,7 +77,7 @@ export class HTML5 extends Adapter<HTML5Options> {
         videoUrl.hash = ''
 
         id = videoUrl.href
-        super(options, id, title, start, end, type)
+        super(encoder, options, id, title, start, end, type)
 
         this.videoUrl = videoUrl
         this.plainUrl = new url.URL(videoUrl.toString())
@@ -250,30 +249,23 @@ export class HTML5 extends Adapter<HTML5Options> {
     }
 
     async getPlayerUrl() {
-        return new Promise<string>((resolve, reject) => {
-            embedUrl(
-                this.adapterType,
-                this.id,
-                {}, (err, val, _head) => {
-                    if (err)
-                        return reject(err)
+        let src = await this.encoder.encodePlayer(
+            this.adapterType,
+            this.id
+        )
 
-                    resolve(val)
-                })
-        }).then(src => {
-            let opt = ''
-            opt += '&autoplay=' + (this.options.autoplay ? '1' : '0')
-            if (this.start > 0)
-                opt += '&start=' + this.start
-            if (this.end > 0)
-                opt += '&end=' + this.end
-            if (this.options.color)
-                opt += '&color=' + this.options.color
+        let opt = ''
+        opt += '&autoplay=' + (this.options.autoplay ? '1' : '0')
+        if (this.start > 0)
+            opt += '&start=' + this.start
+        if (this.end > 0)
+            opt += '&end=' + this.end
+        if (this.options.color)
+            opt += '&color=' + this.options.color
 
-            if (opt)
-                src += '?' + opt.substr(1)
+        if (opt)
+            src += '?' + opt.substr(1)
 
-            return src
-        })
+        return src
     }
 }

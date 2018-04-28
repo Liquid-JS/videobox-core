@@ -9,6 +9,7 @@
         "noUnusedLocals": true,
         "noUnusedParameters": true,
         "sourceMap": true,
+        "declaration": true,
         "outDir": "./dist",
         "lib": [
             "es2017",
@@ -16,7 +17,7 @@
             "dom"
         ]
     },
-    "include": [
-        "src/**/*"
+    "files": [
+        "./src/index.ts"
     ]
 }

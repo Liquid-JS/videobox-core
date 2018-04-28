@@ -1,20 +1,20 @@
-import * as crypto from 'crypto';
-import { DefaultAdapters } from './adapters';
-import { VideoboxCache } from './cache';
-import { BasicCache } from './cache/basic';
-import { defaultOptionsSpecs } from './core';
-import { VideoboxEncoder } from './encoder';
-import { BasicEncoder } from './encoder/basic';
-import { Generator } from './helpers/generator';
-import { OptionsGetter } from './helpers/optionsGetter';
-import { playerTemplate } from './views/player';
+import * as crypto from 'crypto'
+import { Adapter, DefaultAdapters } from './adapters'
+import { VideoboxCache } from './cache'
+import { BasicCache } from './cache/basic'
+import { defaultOptionsSpecs } from './core'
+import { VideoboxEncoder } from './encoder'
+import { BasicEncoder } from './encoder/basic'
+import { Generator } from './helpers/generator'
+import { OptionsGetter } from './helpers/optionsGetter'
+import { playerTemplate } from './views/player'
 
 export class VideoboxContent {
 
     constructor(
         private cache: VideoboxCache = new BasicCache(),
         private encoder: VideoboxEncoder = new BasicEncoder(),
-        private adapters = DefaultAdapters
+        private adapters: Array<typeof Adapter> = DefaultAdapters
     ) { }
 
     async thumbnail(path: string) {
@@ -25,7 +25,7 @@ export class VideoboxContent {
 
         return this.cahched(cacheKey, async () => {
             const spec = await this.encoder.decodeThumbnail(path)
-            return new Generator(spec.width, spec.height, spec.removeBorder, this.adapters)
+            return new Generator(spec.width, spec.height, spec.removeBorder, this.adapters, this.encoder)
                 .generateThumbnail(spec.type, spec.id)
         })
     }
@@ -44,7 +44,7 @@ export class VideoboxContent {
 
         return this.cahched(cacheKey, async () => {
             const spec = await this.encoder.decodePlayer(path)
-            const videos = await Promise.all<any>(this.adapters.map(async adapter => adapter.load(spec.type, spec.id)))
+            const videos = await Promise.all<any>(this.adapters.map(async adapter => adapter.load(this.encoder, spec.type, spec.id)))
             const video = videos.find(v => !!v)
             if (!video)
                 throw new Error('Invalid type: ' + spec.type)

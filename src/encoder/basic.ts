@@ -1,7 +1,7 @@
-import * as crypto from 'crypto';
-import * as stringify from 'json-stable-stringify';
-import * as LRU from 'lru-cache';
-import { VideoboxEncoder } from '.';
+import * as crypto from 'crypto'
+import * as stringify from 'json-stable-stringify'
+import * as LRU from 'lru-cache'
+import { VideoboxEncoder } from '.'
 
 const thumbMap: LRU.Cache<string, { type: string; id: string; width: number; height: number; removeBorder: boolean; }> = LRU({ max: 1000 })
 const playerMap: LRU.Cache<string, { type: string; id: string; }> = LRU({ max: 1000 })

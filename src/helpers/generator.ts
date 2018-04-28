@@ -2,6 +2,7 @@ import { subClass } from 'gm'
 import * as request from 'request'
 import { DefaultAdapters } from '../adapters'
 import { Adapter } from '../adapters/base'
+import { VideoboxEncoder } from '../encoder'
 
 const gm = subClass({ imageMagick: true })
 
@@ -11,7 +12,8 @@ export class Generator {
         private width = 0,
         private height = 0,
         private removeBorder = true,
-        private adapters = DefaultAdapters
+        private adapters = DefaultAdapters,
+        private encoder: VideoboxEncoder
     ) { }
 
     async resizeBuffer(buff: Buffer) {
@@ -50,7 +52,7 @@ export class Generator {
     }
 
     async generateThumbnail(type, id) {
-        return Promise.all(this.adapters.map(async adapter => adapter.load(type, id)))
+        return Promise.all(this.adapters.map(async adapter => adapter.load(this.encoder, type, id)))
             .then(videos => {
                 videos = videos.filter(v => !!v)
                 if (videos.length > 0)

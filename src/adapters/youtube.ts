@@ -1,24 +1,26 @@
+import * as url from 'url'
+import { VideoboxEncoder } from '../encoder'
 import { Adapter, AdapterOptions } from './base'
 
 const adapterType = 'youtube'
 
 export class YouTube extends Adapter<AdapterOptions> {
 
-    static load(type, id) {
+    static load(encoder: VideoboxEncoder, type: string, id: string) {
         if (type == adapterType)
-            return new YouTube({}, id)
+            return new YouTube(encoder, {}, id)
 
         return false
     }
 
-    static parse(options, videoUrl, title = '', start = 0, end = 0) {
+    static parse(encoder: VideoboxEncoder, options: AdapterOptions, videoUrl: url.UrlWithParsedQuery, title = '', start = 0, end = 0) {
         // URL is only 11 YouTube-style characters
         // e.g. dRBmavn6Wk0
         if (
             videoUrl.href
             && videoUrl.href.match(/^[a-zA-Z0-9_-]{11}$/)
         )
-            return new YouTube(options, videoUrl.href, title, start, end, adapterType)
+            return new YouTube(encoder, options, videoUrl.href, title, start, end, adapterType)
 
         // URL is a full YouTube video URL
         // e.g. https://www.youtube.com/watch?v=dRBmavn6Wk0
@@ -27,9 +29,13 @@ export class YouTube extends Adapter<AdapterOptions> {
             && videoUrl.hostname.match(/^(.*\.)?youtube\.com$/i)
             && videoUrl.query
             && videoUrl.query.v
-            && videoUrl.query.v.match(/^[a-zA-Z0-9_-]{11}$/)
-        )
-            return new YouTube(options, videoUrl.query.v, title, start, end, adapterType)
+        ) {
+            if (Array.isArray(videoUrl.query.v))
+                videoUrl.query.v = videoUrl.query.v[0]
+
+            if (videoUrl.query.v.match(/^[a-zA-Z0-9_-]{11}$/))
+                return new YouTube(encoder, options, videoUrl.query.v, title, start, end, adapterType)
+        }
 
         // URL is a short youtu.be sharing URL
         // e.g. https://youtu.be/OfJ-Uz-eEkA
@@ -39,7 +45,7 @@ export class YouTube extends Adapter<AdapterOptions> {
             && videoUrl.pathname
             && videoUrl.pathname.substr(1).match(/^[a-zA-Z0-9_-]{11}$/)
         )
-            return new YouTube(options, videoUrl.pathname.trim('/'), title, start, end, adapterType)
+            return new YouTube(encoder, options, videoUrl.pathname.replace(/(^\/+|\/+$)/g, ''), title, start, end, adapterType)
 
         return false
     }

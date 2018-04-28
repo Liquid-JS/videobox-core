@@ -1,5 +1,6 @@
 import * as request from 'request'
 import * as url from 'url'
+import { VideoboxEncoder } from '../encoder'
 import { splitTime } from '../helpers'
 import { OptionsGetter } from '../helpers/optionsGetter'
 import { Adapter, AdapterOptions } from './base'
@@ -18,14 +19,14 @@ export interface TwitchOptions extends AdapterOptions {
 
 export class Twitch extends Adapter<TwitchOptions> {
 
-    static load(type: string, id: string) {
+    static load(encoder: VideoboxEncoder, type: string, id: string) {
         if (type == adapterType)
-            return new Twitch({}, id)
+            return new Twitch(encoder, {}, id)
 
         return false
     }
 
-    static parse(options: TwitchOptions, videoUrl: url.URL, title = '', start = 0, end = 0) {
+    static parse(encoder: VideoboxEncoder, options: TwitchOptions, videoUrl: url.UrlWithParsedQuery, title = '', start = 0, end = 0) {
         const splitPath = (videoUrl.pathname || '').split('/').filter(p => !!p)
 
         // URL is old Twitch video URL
@@ -37,7 +38,7 @@ export class Twitch extends Adapter<TwitchOptions> {
             && splitPath[1] == 'v'
             && splitPath[2].match(/^\d+$/)
         )
-            return new Twitch(options, 'v/' + splitPath[2], title, start, end, adapterType)
+            return new Twitch(encoder, options, 'v/' + splitPath[2], title, start, end, adapterType)
 
         // URL is new Twitch video URL
         // e.g. https://www.twitch.tv/videos/169051374
@@ -48,7 +49,7 @@ export class Twitch extends Adapter<TwitchOptions> {
             && splitPath[0] == 'videos'
             && splitPath[1].match(/^\d+$/)
         )
-            return new Twitch(options, 'v/' + splitPath[1], title, start, end, adapterType)
+            return new Twitch(encoder, options, 'v/' + splitPath[1], title, start, end, adapterType)
 
         // URL is a Twitch clip URL
         // e.g. https://clips.twitch.tv/EmpathicAbrasiveJayOptimizePrime
@@ -57,7 +58,7 @@ export class Twitch extends Adapter<TwitchOptions> {
             && videoUrl.hostname.match(/^clips\.twitch\.tv$/i)
             && splitPath.length > 0
         )
-            return new Twitch(options, 'c/' + splitPath[0], title, start, end, adapterType)
+            return new Twitch(encoder, options, 'c/' + splitPath[0], title, start, end, adapterType)
 
         // URL is a Twitch channel URL
         // e.g. https://www.twitch.tv/familyjules
@@ -67,17 +68,17 @@ export class Twitch extends Adapter<TwitchOptions> {
             && splitPath.length > 0
             && splitPath[0] != 'videos'
         )
-            return new Twitch(options, 'c/' + options.twitch.channelImage + '/' + splitPath[0], title, start, end, adapterType)
+            return new Twitch(encoder, options, 'c/' + options.twitch.channelImage + '/' + splitPath[0], title, start, end, adapterType)
 
         return false
     }
 
-    constructor(options: TwitchOptions, id: string, title = '', start = 0, end = 0, type = 'none') {
+    constructor(encoder: VideoboxEncoder, options: TwitchOptions, id: string, title = '', start = 0, end = 0, type = 'none') {
         options = options || {}
         options.twitch = options.twitch || {}
         OptionsGetter.parseOptions(optionsSpecs, options.twitch)
 
-        super(options, id, title, start, end, type)
+        super(encoder, options, id, title, start, end, type)
     }
 
     private get plainId() {
