@@ -3,7 +3,7 @@
     "version": "0.0.1",
     "main": "dist/index.js",
     "types": "dist/index.d.ts",
-    "repository": "https://github.com/vbx-js/server.git",
+    "repository": "https://github.com/Liquid-JS/videobox-core.git",
     "author": "HitkoDev <development@hitko.si>",
     "license": "GPL-3.0",
     "files": [
