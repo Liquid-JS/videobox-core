@@ -35,12 +35,12 @@ export class HTML5 extends Adapter<HTML5Options> {
 
     static load(videobox: Videobox, type: string, id: string) {
         if (type == adapterType)
-            return new HTML5(videobox, {}, id)
+            return new HTML5(videobox, id)
 
         return false
     }
 
-    static parse(videobox: Videobox, options: HTML5Options = {}, videoUrl: url.UrlWithParsedQuery, title = '', start = 0, end = 0) {
+    static parse(videobox: Videobox, videoUrl: url.UrlWithParsedQuery, title = '', start = 0, end = 0) {
         const extension = path.extname(videoUrl.pathname).substr(1).toLowerCase()
 
         // URL ends with `VIDEO_EXTENSIONS`
@@ -50,7 +50,7 @@ export class HTML5 extends Adapter<HTML5Options> {
             && videoUrl.pathname
             && VIDEO_EXTENSIONS.indexOf(extension) >= 0
         )
-            return new HTML5(videobox, options, videoUrl.href, title, start, end, adapterType)
+            return new HTML5(videobox, videoUrl.href, title, start, end, adapterType)
 
         // URL ends with `AUDIO_EXTENSIONS`
         // e.g. http://vjs.zencdn.net/v/oceans.mp3
@@ -59,13 +59,13 @@ export class HTML5 extends Adapter<HTML5Options> {
             && videoUrl.pathname
             && AUDIO_EXTENSIONS.indexOf(extension) >= 0
         )
-            return new HTML5(videobox, options, videoUrl.href, title, start, end, adapterType)
+            return new HTML5(videobox, videoUrl.href, title, start, end, adapterType)
 
         return false
     }
 
-    constructor(videobox: Videobox, options: HTML5Options, id: string, title = '', start = 0, end = 0, type = 'none') {
-        options = options || {}
+    constructor(videobox: Videobox, id: string, title = '', start = 0, end = 0, type = 'none') {
+        const options: HTML5Options = videobox.options || {}
         options.html5 = options.html5 || {}
         OptionsGetter.parseOptions(optionsSpecs, options.html5)
 
@@ -77,7 +77,7 @@ export class HTML5 extends Adapter<HTML5Options> {
         videoUrl.hash = ''
 
         id = videoUrl.href
-        super(videobox, options, id, title, start, end, type)
+        super(videobox, id, title, start, end, type)
 
         this.videoUrl = videoUrl
         this.plainUrl = new url.URL(videoUrl.toString())

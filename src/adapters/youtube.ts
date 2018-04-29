@@ -8,19 +8,19 @@ export class YouTube extends Adapter<AdapterOptions> {
 
     static load(videobox: Videobox, type: string, id: string) {
         if (type == adapterType)
-            return new YouTube(videobox, {}, id)
+            return new YouTube(videobox, id)
 
         return false
     }
 
-    static parse(videobox: Videobox, options: AdapterOptions, videoUrl: url.UrlWithParsedQuery, title = '', start = 0, end = 0) {
+    static parse(videobox: Videobox, videoUrl: url.UrlWithParsedQuery, title = '', start = 0, end = 0) {
         // URL is only 11 YouTube-style characters
         // e.g. dRBmavn6Wk0
         if (
             videoUrl.href
             && videoUrl.href.match(/^[a-zA-Z0-9_-]{11}$/)
         )
-            return new YouTube(videobox, options, videoUrl.href, title, start, end, adapterType)
+            return new YouTube(videobox, videoUrl.href, title, start, end, adapterType)
 
         // URL is a full YouTube video URL
         // e.g. https://www.youtube.com/watch?v=dRBmavn6Wk0
@@ -34,7 +34,7 @@ export class YouTube extends Adapter<AdapterOptions> {
                 videoUrl.query.v = videoUrl.query.v[0]
 
             if (videoUrl.query.v.match(/^[a-zA-Z0-9_-]{11}$/))
-                return new YouTube(videobox, options, videoUrl.query.v, title, start, end, adapterType)
+                return new YouTube(videobox, videoUrl.query.v, title, start, end, adapterType)
         }
 
         // URL is a short youtu.be sharing URL
@@ -45,7 +45,7 @@ export class YouTube extends Adapter<AdapterOptions> {
             && videoUrl.pathname
             && videoUrl.pathname.substr(1).match(/^[a-zA-Z0-9_-]{11}$/)
         )
-            return new YouTube(videobox, options, videoUrl.pathname.replace(/(^\/+|\/+$)/g, ''), title, start, end, adapterType)
+            return new YouTube(videobox, videoUrl.pathname.replace(/(^\/+|\/+$)/g, ''), title, start, end, adapterType)
 
         return false
     }

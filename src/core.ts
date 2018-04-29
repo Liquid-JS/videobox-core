@@ -62,7 +62,7 @@ export class Videobox {
                 }
 
                 const matches = this.adapters
-                    .map(adapter => adapter.parse(this, this.options, <any>url.parse(id, true, true), title, start, end))
+                    .map(adapter => adapter.parse(this, <any>url.parse(id, true, true), title, start, end))
                     .filter(v => !!v)
 
                 if (matches.length)

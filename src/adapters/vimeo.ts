@@ -10,19 +10,19 @@ export class Vimeo extends Adapter<AdapterOptions> {
 
     static load(videobox: Videobox, type: string, id: string) {
         if (type == adapterType)
-            return new Vimeo(videobox, {}, id)
+            return new Vimeo(videobox, id)
 
         return false
     }
 
-    static parse(videobox: Videobox, options: AdapterOptions, videoUrl: url.UrlWithParsedQuery, title = '', start = 0, end = 0) {
+    static parse(videobox: Videobox, videoUrl: url.UrlWithParsedQuery, title = '', start = 0, end = 0) {
         // URL is only numeric
         // e.g. 230564722
         if (
             videoUrl.href
             && videoUrl.href.match(/^\d+$/)
         )
-            return new Vimeo(videobox, options, videoUrl.href, title, start, end, adapterType)
+            return new Vimeo(videobox, videoUrl.href, title, start, end, adapterType)
 
         // URL is a full vimeo video URL
         // e.g. https://vimeo.com/230564722
@@ -32,7 +32,7 @@ export class Vimeo extends Adapter<AdapterOptions> {
             && videoUrl.pathname
             && videoUrl.pathname.substr(1).match(/^\d+$/)
         )
-            return new Vimeo(videobox, options, videoUrl.pathname.substr(1), title, start, end, adapterType)
+            return new Vimeo(videobox, videoUrl.pathname.substr(1), title, start, end, adapterType)
 
         return false
     }

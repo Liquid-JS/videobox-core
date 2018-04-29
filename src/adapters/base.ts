@@ -13,24 +13,25 @@ export interface AdapterOptions {
 
 export abstract class Adapter<T extends AdapterOptions> {
 
+    options: T
+
     static load(_videobox: Videobox, _type: string, _id: string): Adapter<any> | false {
         throw new Error('Not implemented')
     }
 
-    static parse<T extends AdapterOptions>(_videobox: Videobox, _options: T, _videoUrl: url.UrlWithParsedQuery, _title: string, _start: number, _end: number): Adapter<any> | false {
+    static parse(_videobox: Videobox, _videoUrl: url.UrlWithParsedQuery, _title: string, _start: number, _end: number): Adapter<any> | false {
         throw new Error('Not implemented')
     }
 
     constructor(
         protected videobox: Videobox,
-        protected options: T,
         protected id: string,
         protected title = '',
         protected start = 0,
         protected end = 0,
         protected adapterType = 'none'
     ) {
-        options = <any>(options || {})
+        const options = <any>(videobox.options || {})
         OptionsGetter.parseOptions(defaultOptionsSpecs, options)
         this.options = options
     }

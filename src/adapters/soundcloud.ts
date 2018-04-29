@@ -21,12 +21,12 @@ export class SoundCloud extends Adapter<SoundCloudOptions> {
 
     static load(videobox: Videobox, type: string, id: string) {
         if (type == adapterType)
-            return new SoundCloud(videobox, {}, id)
+            return new SoundCloud(videobox, id)
 
         return false
     }
 
-    static parse(videobox: Videobox, options: SoundCloudOptions, videoUrl: url.UrlWithParsedQuery, title = '', start = 0, end = 0) {
+    static parse(videobox: Videobox, videoUrl: url.UrlWithParsedQuery, title = '', start = 0, end = 0) {
         const splitPath = (videoUrl.pathname || '').split('/').filter(p => !!p)
 
         // URL is a SoundCloud track URL
@@ -36,17 +36,17 @@ export class SoundCloud extends Adapter<SoundCloudOptions> {
             && videoUrl.hostname.match(/^(.*\.)?soundcloud\.com/i)
             && splitPath.length > 1
         )
-            return new SoundCloud(videobox, options, 'https://soundcloud.com/' + splitPath.splice(0, 2).join('/'), title, start, end, adapterType)
+            return new SoundCloud(videobox, 'https://soundcloud.com/' + splitPath.splice(0, 2).join('/'), title, start, end, adapterType)
 
         return false
     }
 
-    constructor(videobox: Videobox, options: SoundCloudOptions, id: string, title = '', start = 0, end = 0, type = 'none') {
-        options = options || {}
+    constructor(videobox: Videobox, id: string, title = '', start = 0, end = 0, type = 'none') {
+        const options: SoundCloudOptions = videobox.options || {}
         options.soundCloud = options.soundCloud || {}
         OptionsGetter.parseOptions(optionsSpecs, options.soundCloud)
 
-        super(videobox, options, id, title, start, end, type)
+        super(videobox, id, title, start, end, type)
     }
 
     async getThumbnailBaseUrl() {
