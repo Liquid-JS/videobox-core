@@ -3,6 +3,10 @@ image: node:9
 matrix:
   - env: SCRIPT=coverage:upload
 
+before_install:
+  - apt-get update
+  - apt-get install -y git
+
 install:
   - yarn
 
