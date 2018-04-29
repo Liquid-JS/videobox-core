@@ -20,8 +20,5 @@
                 "name": "typescript-lit-html-plugin"
             }
         ]
-    },
-    "include": [
-        "./src"
-    ]
+    }
 }

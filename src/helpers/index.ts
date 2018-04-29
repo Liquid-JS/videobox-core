@@ -17,20 +17,24 @@ export function checkExtensions(baseUrl: string | url.URL, extensions: string[],
 
     const extension = path.extname(fileUrl.pathname)
     fileUrl.pathname = fileUrl.pathname.substr(0, fileUrl.pathname.length - extension.length + 1)
-    return Promise.all(extensions.map(ext => new Promise<{ url: string, mime: string }>((resolve, reject) => {
-        request.head(fileUrl.href + ext, (err, res, _body) => {
-            if (err)
-                return reject(err)
+    const uniqueExtensions = [...new Set([...extensions, extension.substr(1)])]
+    return Promise.all(uniqueExtensions.map(ext =>
+        new Promise<{ url: string, mime: string }>((resolve, reject) => {
+            request.head(fileUrl.href + ext, (err, res, _body) => {
+                if (err)
+                    return reject(err)
 
-            if (res.statusCode == 200)
-                return resolve({
-                    url: fileUrl.href + ext,
-                    mime: (res.headers || {})['content-type'] || ''
-                })
+                if (res.statusCode == 200)
+                    return resolve({
+                        url: fileUrl.href + ext,
+                        mime: (res.headers || {})['content-type'] || ''
+                    })
 
-            resolve()
+                resolve()
+            })
         })
-    })))
+            .catch<any>(err => console.error(err))
+    ))
         .then(matches => matches.filter(match => !!match))
         .then(matches => mime ? matches : matches.map(match => match.url))
 }
@@ -58,4 +62,10 @@ export function timeToSeconds(time: string) {
         .map(el => parseInt(el) || 0)
         .reverse()
         .reduce((t, el, i) => t + el * Math.pow(60, i), 0)
+}
+
+export function wait(ms) {
+    return new Promise((resolve) => {
+        setTimeout(resolve, ms)
+    })
 }

@@ -9,7 +9,8 @@ export const OptionsGetter = {
     },
 
     int(options, name, def = 0) {
-        return parseInt((options[name] || '0') + '') || def
+        const val = parseInt((options[name] || '') + '')
+        return isNaN(val) ? def : val
     },
 
     bool(options, name, def = false) {

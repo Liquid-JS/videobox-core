@@ -1,19 +1,18 @@
 import * as NodeCache from 'node-cache'
 import { VideoboxCache } from '.'
 
+const cache = new NodeCache()
+
 export class BasicCache implements VideoboxCache {
 
-    private cache: NodeCache
-
-    constructor() {
-        this.cache = new NodeCache()
-    }
+    constructor() { }
 
     async get(key: string): Promise<any> {
-        return this.cache.get(key)
+        const val = cache.get(key)
+        return val === undefined ? null : val
     }
 
     async set(key: string, value: any, life?: number): Promise<any> {
-        return this.cache.set(key, value, life || 0)
+        return cache.set(key, value, life || 0)
     }
 }

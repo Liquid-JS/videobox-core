@@ -1,0 +1,9 @@
+pipeline:
+  test:
+    image: node:9
+    secrets: 
+      - codecov_token
+    commands:
+      - yarn
+      - yarn test
+      - yarn coverage:upload
