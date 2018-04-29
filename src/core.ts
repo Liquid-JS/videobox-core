@@ -20,9 +20,9 @@ export type VideoboxOptions = AdapterOptions
 export class Videobox {
 
     constructor(
-        private options: VideoboxOptions,
-        private encoder: VideoboxEncoder = new BasicEncoder(),
-        private adapters = DefaultAdapters
+        public readonly options: VideoboxOptions,
+        public readonly encoder: VideoboxEncoder = new BasicEncoder(),
+        public readonly adapters = DefaultAdapters
     ) {
         options = options || {}
         OptionsGetter.parseOptions(defaultOptionsSpecs, options)
@@ -62,7 +62,7 @@ export class Videobox {
                 }
 
                 const matches = this.adapters
-                    .map(adapter => adapter.parse(this.encoder, this.options, <any>url.parse(id, true, true), title, start, end))
+                    .map(adapter => adapter.parse(this, this.options, <any>url.parse(id, true, true), title, start, end))
                     .filter(v => !!v)
 
                 if (matches.length)

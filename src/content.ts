@@ -1,10 +1,7 @@
 import * as crypto from 'crypto'
-import { Adapter, DefaultAdapters } from './adapters'
 import { VideoboxCache } from './cache'
 import { BasicCache } from './cache/basic'
-import { defaultOptionsSpecs } from './core'
-import { VideoboxEncoder } from './encoder'
-import { BasicEncoder } from './encoder/basic'
+import { defaultOptionsSpecs, Videobox } from './core'
 import { Generator } from './helpers/generator'
 import { OptionsGetter } from './helpers/optionsGetter'
 import { playerTemplate } from './views/player'
@@ -12,9 +9,8 @@ import { playerTemplate } from './views/player'
 export class VideoboxContent {
 
     constructor(
-        private cache: VideoboxCache = new BasicCache(),
-        private encoder: VideoboxEncoder = new BasicEncoder(),
-        private adapters: Array<typeof Adapter> = DefaultAdapters
+        public readonly core: Videobox,
+        public readonly cache: VideoboxCache = new BasicCache()
     ) { }
 
     async thumbnail(path: string) {
@@ -24,8 +20,8 @@ export class VideoboxContent {
             .digest('hex')
 
         return this.cahched(cacheKey, async () => {
-            const spec = await this.encoder.decodeThumbnail(path)
-            return new Generator(spec.width, spec.height, spec.removeBorder, this.adapters, this.encoder)
+            const spec = await this.core.encoder.decodeThumbnail(path)
+            return new Generator(spec.width, spec.height, spec.removeBorder, this.core.adapters, this.core)
                 .generateThumbnail(spec.type, spec.id)
         })
     }
@@ -43,8 +39,8 @@ export class VideoboxContent {
             .digest('hex')
 
         return this.cahched(cacheKey, async () => {
-            const spec = await this.encoder.decodePlayer(path)
-            const videos = await Promise.all<any>(this.adapters.map(async adapter => adapter.load(this.encoder, spec.type, spec.id)))
+            const spec = await this.core.encoder.decodePlayer(path)
+            const videos = await Promise.all<any>(this.core.adapters.map(async adapter => adapter.load(this.core, spec.type, spec.id)))
             const video = videos.find(v => !!v)
             if (!video)
                 throw new Error('Invalid type: ' + spec.type)

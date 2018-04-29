@@ -2,7 +2,7 @@ import * as Ffmpeg from 'fluent-ffmpeg'
 import * as JSFtp from 'jsftp'
 import * as path from 'path'
 import * as url from 'url'
-import { VideoboxEncoder } from '../encoder'
+import { Videobox } from '../core'
 import { checkExtensions } from '../helpers'
 import { OptionsGetter } from '../helpers/optionsGetter'
 import { Adapter, AdapterOptions } from './base'
@@ -33,14 +33,14 @@ export class HTML5 extends Adapter<HTML5Options> {
     plainUrl: url.URL
     extension: string
 
-    static load(encoder: VideoboxEncoder, type: string, id: string) {
+    static load(videobox: Videobox, type: string, id: string) {
         if (type == adapterType)
-            return new HTML5(encoder, {}, id)
+            return new HTML5(videobox, {}, id)
 
         return false
     }
 
-    static parse(encoder: VideoboxEncoder, options: HTML5Options = {}, videoUrl: url.UrlWithParsedQuery, title = '', start = 0, end = 0) {
+    static parse(videobox: Videobox, options: HTML5Options = {}, videoUrl: url.UrlWithParsedQuery, title = '', start = 0, end = 0) {
         const extension = path.extname(videoUrl.pathname).substr(1).toLowerCase()
 
         // URL ends with `VIDEO_EXTENSIONS`
@@ -50,7 +50,7 @@ export class HTML5 extends Adapter<HTML5Options> {
             && videoUrl.pathname
             && VIDEO_EXTENSIONS.indexOf(extension) >= 0
         )
-            return new HTML5(encoder, options, videoUrl.href, title, start, end, adapterType)
+            return new HTML5(videobox, options, videoUrl.href, title, start, end, adapterType)
 
         // URL ends with `AUDIO_EXTENSIONS`
         // e.g. http://vjs.zencdn.net/v/oceans.mp3
@@ -59,12 +59,12 @@ export class HTML5 extends Adapter<HTML5Options> {
             && videoUrl.pathname
             && AUDIO_EXTENSIONS.indexOf(extension) >= 0
         )
-            return new HTML5(encoder, options, videoUrl.href, title, start, end, adapterType)
+            return new HTML5(videobox, options, videoUrl.href, title, start, end, adapterType)
 
         return false
     }
 
-    constructor(encoder: VideoboxEncoder, options: HTML5Options, id: string, title = '', start = 0, end = 0, type = 'none') {
+    constructor(videobox: Videobox, options: HTML5Options, id: string, title = '', start = 0, end = 0, type = 'none') {
         options = options || {}
         options.html5 = options.html5 || {}
         OptionsGetter.parseOptions(optionsSpecs, options.html5)
@@ -77,7 +77,7 @@ export class HTML5 extends Adapter<HTML5Options> {
         videoUrl.hash = ''
 
         id = videoUrl.href
-        super(encoder, options, id, title, start, end, type)
+        super(videobox, options, id, title, start, end, type)
 
         this.videoUrl = videoUrl
         this.plainUrl = new url.URL(videoUrl.toString())
@@ -249,7 +249,7 @@ export class HTML5 extends Adapter<HTML5Options> {
     }
 
     async getPlayerUrl() {
-        let src = await this.encoder.encodePlayer(
+        let src = await this.videobox.embedUrl(
             this.adapterType,
             this.id
         )

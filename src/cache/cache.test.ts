@@ -1,7 +1,7 @@
 import { expect } from 'chai'
 import { suite, test } from 'mocha-typescript'
 import { BasicCache } from '.'
-import { wait } from '../helpers';
+import { wait } from '../helpers'
 
 const testKey = 'testKey'
 const testVal = 'testVal'

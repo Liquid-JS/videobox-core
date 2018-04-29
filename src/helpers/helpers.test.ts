@@ -1,9 +1,9 @@
-import { expect, assert } from 'chai'
+import { assert, expect } from 'chai'
+import 'chai-arrays'
 import { suite, test } from 'mocha-typescript'
 import * as request from 'request'
-import * as sinon from 'sinon';
-import { splitTime, timeToSeconds, checkExtensions, OptionsGetter } from '.'
-import 'chai-arrays'
+import * as sinon from 'sinon'
+import { checkExtensions, OptionsGetter, splitTime, timeToSeconds } from '.'
 
 const baseUrl = 'http://www.test.com/test.ext'
 const extensions = ['err', 'ext1', 'ext2', 'no-ext']
@@ -87,16 +87,16 @@ export class Helpers {
         expect(consoleStub.calledTwice).to.be.true
         assert.sameDeepMembers(rsMime, [
             {
-                mime: "",
-                url: "http://www.test.com/test.ext1"
+                mime: '',
+                url: 'http://www.test.com/test.ext1'
             },
             {
-                mime: "",
-                url: "http://www.test.com/test.ext2"
+                mime: '',
+                url: 'http://www.test.com/test.ext2'
             },
             {
-                mime: "text/test",
-                url: "http://www.test.com/test.ext"
+                mime: 'text/test',
+                url: 'http://www.test.com/test.ext'
             }
         ])
     }
