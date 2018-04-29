@@ -1,11 +1,13 @@
 image: node:9
 
+matrix:
+  - env: SCRIPT=coverage:upload
+
 install:
   - yarn
 
 script:
-  - yarn coverage:upload
-
+  - yarn $SCRIPT
 
 cache:
   - node_modules
