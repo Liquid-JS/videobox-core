@@ -5,5 +5,4 @@ pipeline:
       - codecov_token
     commands:
       - yarn
-      - yarn test
       - yarn coverage:upload

@@ -13,10 +13,21 @@ sinon.stub(request, 'head').callsFake((url, cb) => {
     if (path.endsWith('.err'))
         return cb(new Error('Test err'), null, null)
 
-    if (path.endsWith('.ext') || path.endsWith('.ext1') || path.endsWith('.ext2'))
+    if (path.endsWith('.ext'))
         return cb(null, {
             statusCode: 200,
             headers: { 'content-type': 'text/test' }
+        }, null)
+
+    if (path.endsWith('.ext1'))
+        return cb(null, {
+            statusCode: 200,
+            headers: {}
+        }, null)
+
+    if (path.endsWith('.ext2'))
+        return cb(null, {
+            statusCode: 200
         }, null)
 
     return cb(null, {
@@ -40,6 +51,7 @@ export class Helpers {
 
     @test('should convert time in seconds to string')
     splitTime() {
+        expect(splitTime()).to.equal('')
         expect(splitTime(0)).to.equal('')
         expect(splitTime(-10)).to.equal('')
         expect(splitTime(10)).to.equal('10s')
@@ -68,6 +80,24 @@ export class Helpers {
             'http://www.test.com/test.ext1',
             'http://www.test.com/test.ext2',
             'http://www.test.com/test.ext'
+        ])
+
+        const rsMime = await checkExtensions(baseUrl, extensions, true)
+
+        expect(consoleStub.calledTwice).to.be.true
+        assert.sameDeepMembers(rsMime, [
+            {
+                mime: "",
+                url: "http://www.test.com/test.ext1"
+            },
+            {
+                mime: "",
+                url: "http://www.test.com/test.ext2"
+            },
+            {
+                mime: "text/test",
+                url: "http://www.test.com/test.ext"
+            }
         ])
     }
 
