@@ -9,6 +9,7 @@ export interface AdapterOptions {
     removeBorder?: boolean
     autoplay?: boolean
     color?: string
+    baseUrl?: string
 }
 
 export abstract class Adapter<T extends AdapterOptions> {

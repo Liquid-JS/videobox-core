@@ -11,7 +11,8 @@ export const defaultOptionsSpecs = {
     thumbnailHeight: { type: 'int', default: 360 },
     removeBorder: { type: 'bool', default: true },
     autoplay: { type: 'bool', default: true },
-    color: { type: 'rgb', default: '50bf82' }
+    color: { type: 'rgb', default: '50bf82' },
+    baseUrl: { type: 'string', default: process.env.BASE_URL }
 }
 
 export type VideoboxOptions = AdapterOptions
@@ -30,10 +31,12 @@ export class Videobox {
 
     async imageUrl(type: string, id: string, width = 300, height = 225, removeBorder = true) {
         return this.encoder.encodeThumbnail(type, id, width, height, removeBorder)
+            .then(path => this.options.baseUrl + 'thumbnail/' + path + '.jpg')
     }
 
     async embedUrl(type: string, id: string) {
         return this.encoder.encodePlayer(type, id)
+            .then(path => this.options.baseUrl + 'embed/' + path)
     }
 
     async parse(code: string) {
