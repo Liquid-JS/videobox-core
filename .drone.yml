@@ -6,5 +6,3 @@ pipeline:
     commands:
       - yarn
       - yarn coverage:upload
-
-      

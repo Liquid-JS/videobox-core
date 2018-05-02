@@ -14,6 +14,7 @@ export interface AdapterOptions {
 export abstract class Adapter<T extends AdapterOptions> {
 
     options: T
+    protected visibleId: string
 
     static load(_videobox: Videobox, _type: string, _id: string): Adapter<any> | false {
         throw new Error('Not implemented')
@@ -56,7 +57,7 @@ export abstract class Adapter<T extends AdapterOptions> {
             this.getPlayerUrl()
         ]).then(urls => {
             return {
-                id: this.id,
+                id: this.visibleId || this.id,
                 title: this.title,
                 start: this.start,
                 end: this.end,

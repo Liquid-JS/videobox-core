@@ -12,7 +12,7 @@ export const defaultOptionsSpecs = {
     removeBorder: { type: 'bool', default: true },
     autoplay: { type: 'bool', default: true },
     color: { type: 'rgb', default: '50bf82' },
-    baseUrl: { type: 'string', default: process.env.BASE_URL }
+    baseUrl: { type: 'string', default: process.env.BASE_URL || 'http://localhost:3000/' }
 }
 
 export type VideoboxOptions = AdapterOptions

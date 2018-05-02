@@ -24,13 +24,14 @@ export interface HTML5Options extends AdapterOptions {
         ftpUser?: string
         ftpPassword?: string
         ftpPort?: string
+        ftpRoot?: string
     }
 }
 
 export class HTML5 extends Adapter<HTML5Options> {
 
     videoUrl: url.URL
-    plainUrl: url.URL
+    ftpUrl: url.URL
     extension: string
 
     static load(videobox: Videobox, type: string, id: string) {
@@ -69,39 +70,54 @@ export class HTML5 extends Adapter<HTML5Options> {
         options.html5 = options.html5 || {}
         OptionsGetter.parseOptions(optionsSpecs, options.html5)
 
-        const videoUrl = new url.URL(id)
-        videoUrl.username = videoUrl.username || options.html5.ftpUser || ''
-        videoUrl.password = videoUrl.password || options.html5.ftpPassword || ''
-        videoUrl.port = (videoUrl.port || options.html5.ftpPort || 21) + ''
-        videoUrl.search = ''
-        videoUrl.hash = ''
+        const ids = id.split('|')
+            .map(p => p.trim())
+            .filter(p => !!p)
+            .map(p => new url.URL(p))
+            .map(p => {
+                p.search = ''
+                p.hash = ''
+                return p
+            })
 
-        id = videoUrl.href
+        const videoUrl = ids[0]
+        let ftpUrl: url.URL
+
+        if (ids.length > 1)
+            ftpUrl = ids[1]
+
+        if (!ftpUrl) {
+            ftpUrl = new url.URL(videoUrl.href)
+            ftpUrl.username = ftpUrl.username || options.html5.ftpUser || ''
+            ftpUrl.password = ftpUrl.password || options.html5.ftpPassword || ''
+            ftpUrl.port = (ftpUrl.port || options.html5.ftpPort || 21) + ''
+            ftpUrl.protocol = 'ftp'
+        }
+
+        id = ftpUrl && ftpUrl.href != videoUrl.href ? `${videoUrl.href}|${ftpUrl.href}` : videoUrl.href
         super(videobox, id, title, start, end, type)
 
+        this.visibleId = videoUrl.href
         this.videoUrl = videoUrl
-        this.plainUrl = new url.URL(videoUrl.toString())
-        this.plainUrl.password = ''
-        this.plainUrl.username = ''
-        this.plainUrl.port = ''
+        this.ftpUrl = ftpUrl
 
         this.extension = path.extname(this.videoUrl.pathname).substr(1).toLowerCase()
     }
 
     private get ftpClient() {
-        if (this.videoUrl.username && this.videoUrl.password)
+        if (this.ftpUrl.username && this.ftpUrl.password)
             return new JSFtp({
-                host: this.videoUrl.hostname,
-                port: this.videoUrl.port,
-                user: this.videoUrl.username,
-                pass: this.videoUrl.password
+                host: this.ftpUrl.hostname,
+                port: this.ftpUrl.port,
+                user: this.ftpUrl.username,
+                pass: this.ftpUrl.password
             })
 
         return null
     }
 
     async getThumbnailBaseUrl() {
-        let thubmnailUrl = new url.URL(this.plainUrl.toString())
+        let thubmnailUrl = new url.URL(this.videoUrl.toString())
         thubmnailUrl.pathname = ''
 
         let promise: Promise<any> = Promise.resolve()
@@ -145,18 +161,18 @@ export class HTML5 extends Adapter<HTML5Options> {
                             .run()
                     }
 
-                    reject(new Error('No source file for ' + this.plainUrl.href + ' found using FTP'))
+                    reject(new Error('No source file for ' + this.videoUrl.href + ' found using FTP'))
                 })
             })
                 .catch(err => console.log(err) || '')
         else
             // 3. check for existing thumbnil files through HTTP
-            promise = checkExtensions(this.plainUrl, THUMBNAIL_EXTENSIONS)
+            promise = checkExtensions(this.videoUrl, THUMBNAIL_EXTENSIONS)
                 .then(matches => {
                     if (matches.length > 0)
                         return thubmnailUrl = new url.URL(matches[0])
                     else
-                        throw new Error('No thumbnail can be found for ' + this.plainUrl.href)
+                        throw new Error('No thumbnail can be found for ' + this.videoUrl.href)
                 })
 
         return promise.then(() => thubmnailUrl.href)
@@ -240,12 +256,12 @@ export class HTML5 extends Adapter<HTML5Options> {
     }
 
     async getSourceTracks() {
-        // this.convert().catch(err => console.log("Error wihle converting video " + this.plainUrl.href, err))
-        return checkExtensions(this.plainUrl, VIDEO_EXTENSIONS, true)
+        // this.convert().catch(err => console.log("Error wihle converting video " + this.videoUrl.href, err))
+        return checkExtensions(this.videoUrl, VIDEO_EXTENSIONS, true)
     }
 
     async getOriginalTrack() {
-        return this.plainUrl.href
+        return this.videoUrl.href
     }
 
     async getPlayerUrl() {
