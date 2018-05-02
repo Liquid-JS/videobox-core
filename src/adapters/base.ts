@@ -1,3 +1,4 @@
+import * as crypto from 'crypto'
 import * as url from 'url'
 import { defaultOptionsSpecs, Videobox } from '../core'
 import { OptionsGetter } from '../helpers/optionsGetter'
@@ -55,14 +56,21 @@ export abstract class Adapter<T extends AdapterOptions> {
         return Promise.all([
             this.getThumbnailUrl(),
             this.getPlayerUrl()
-        ]).then(urls => {
+        ]).then(([img, src]) => {
+            const rawId = this.visibleId || this.id
+            const id = crypto.createHash('md5')
+                .update(this.adapterType)
+                .update(rawId)
+                .digest('hex')
+
             return {
-                id: this.visibleId || this.id,
+                id,
+                rawId,
                 title: this.title,
                 start: this.start,
                 end: this.end,
-                img: urls[0],
-                src: urls[1]
+                img,
+                src
             }
         })
     }

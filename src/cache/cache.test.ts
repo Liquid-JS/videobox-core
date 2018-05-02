@@ -37,9 +37,10 @@ export class Cache {
     async expired() {
         const cache = new BasicCache()
         await cache.set(testKey, testVal, 1)
+        await wait(500)
         expect(await cache.get(testKey)).to.equal(testVal)
 
-        await wait(1100)
+        await wait(600)
         expect(await cache.get(testKey)).to.equal(null)
     }
 }
