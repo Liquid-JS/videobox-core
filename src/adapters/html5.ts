@@ -42,6 +42,9 @@ export class HTML5 extends Adapter<HTML5Options> {
     }
 
     static parse(videobox: Videobox, videoUrl: url.UrlWithParsedQuery, title = '', start = 0, end = 0) {
+        if (!videoUrl.pathname)
+            return false
+
         const extension = path.extname(videoUrl.pathname).substr(1).toLowerCase()
 
         // URL ends with `VIDEO_EXTENSIONS`
